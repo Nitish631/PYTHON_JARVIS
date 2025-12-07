@@ -3,53 +3,58 @@ import pyttsx3
 import webbrowser
 import time
 
-# Initialize text-to-speech
-tts = pyttsx3.init()
-
-def speak(text: str):
+r=sr.Recognizer()
+KEYWORD="jarvis"
+def speak(text:str):
+    tts=pyttsx3.init()
     tts.say(text)
     tts.runAndWait()
+    tts.stop()
+    print("SPEAK IS CALLED")
 
-# Recognizer and keyword
-r = sr.Recognizer()
-mic=sr.Microphone()
-KEYWORD = "jarvis"
-activated = False
-def callback(recognizer :sr.Recognizer,audio):
+
+
+def websearch(query:str):
+    url:str=f"https://www.google.com/search?q={query}"
+    webbrowser.open_new(url)
+
+def listenMicrophone(phrase_time_limit:int)->str:
+    command:str=""
+    with sr.Microphone() as source:
+        # r.adjust_for_ambient_noise(source,duration=2)
+        r.energy_threshold=100
+        r.non_speaking_duration=0.5
+        r.pause_threshold=1
+        r.phrase_threshold=0.3
+        print("listening")
+        command:str=""
+        try:
+            audio=r.listen(source,timeout=2,phrase_time_limit=phrase_time_limit)
+        except sr.WaitTimeoutError:
+            print("No speech detected")
+            return""
     try:
-        text:str=recognizer.recognize_google(audio)
-        text=text.lower()
-        print(f"You said: {text}")
-        if KEYWORD in text:
-            print("Keyword detected!")
-            index=text.index(KEYWORD)+len(KEYWORD)
-            query=text[index:].strip()
-            if query:
-                web_search(query)
-            else:
-                print("please say something after jarvis")
-    except sr.UnknownValueError:
-        pass
-    except sr.RequestError:
-        print("Could not request result from google")
-    
+        command=r.recognize_google(audio)
+    except sr.UnknownValueError as e:
+        print("Could not understand audio")
+    except sr.RequestError as e:
+        print("Could not request result.")
+    return command.lower()
 
-def web_search(query: str):
-    url = f"https://www.google.com/search?q={query}"
-    webbrowser.open(url)
-    print(f"Searching the web for {query}")
 
 def main():
-    print("JARVIS ACTIVATED.")
-    speak("SAY JARVIS")
-    with mic as source:
-        r.adjust_for_ambient_noise(source,duration=2)
-    stop_listening=r.listen_in_background(mic,callback)
-    try:
-        while True:
-            time.sleep(0.1)
-    except KeyboardInterrupt:
-        stop_listening()
-        print("Exiting program")
-if __name__ == "__main__":
+    print("recognizing")
+    speak("JARVIS ACTIVATED")
+    while True:
+        command:str=listenMicrophone(phrase_time_limit=1.5)
+        if(KEYWORD in command):
+            speak("YA")
+            print("READY TO COMMAND")
+            command:str=listenMicrophone(5)
+            if command !="":
+                websearch(command)
+                print(f"Your command is{command}")
+            
+
+if __name__== "__main__":
     main()
