@@ -56,6 +56,8 @@ def processCommand(c):
         open_web_domain("youtube")
     elif "news" in c:
         handle_news()
+    else:
+        websearch(c)
 
 def websearch(query:str):
     url:str=f"https://www.google.com/search?q={query}"
