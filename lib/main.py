@@ -80,28 +80,29 @@ def getCommand(source,phrase_time_limit:float)->str:
     
 def listenMicrophone()->str:
     with sr.Microphone() as source:
-        # r.adjust_for_ambient_noise(source,duration=2)
+        r.adjust_for_ambient_noise(source,duration=3)
         r.energy_threshold=100
         r.non_speaking_duration=0.5
         r.pause_threshold=1
         r.phrase_threshold=0.3
-        print("listening")
         command:str=""
-        command=getCommand(source=source,phrase_time_limit=1)
-        print(f"COMMAND IS {command}")
-        if(KEYWORD in command):
-            print("READY TO COMMAND.")
-            speak("YA")
-            command=getCommand(source=source,phrase_time_limit=5)
-            processCommand(command)
-            print(f"Your command is {command}")
+        speak("JARVIS ACTIVATED")
+        while True:
+            print("listening")
+            command=getCommand(source=source,phrase_time_limit=2)
+            if(KEYWORD in command):
+                print("READY TO COMMAND.")
+                speak("YA")
+                command=getCommand(source=source,phrase_time_limit=5)
+                if(command!=""):
+                    processCommand(command)
+                print(f"COMMAND IS {command}")
 
 
 def main():
-    print("recognizing")
-    speak("JARVIS ACTIVATED")
-    while True:
-        listenMicrophone()
+    # print("recognizing")
+    # listenMicrophone()
+    handle_news()
             
 
 if __name__== "__main__":
