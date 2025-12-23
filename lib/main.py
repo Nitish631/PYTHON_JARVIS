@@ -1,15 +1,15 @@
 import speech_recognition as sr
 import pyttsx3
 import webbrowser
-from datetime import datetime ,timedelta
+# from datetime import datetime ,timedelta
 from typing import Dict ,Any
 import requests
-from secret import API_KEY
+import secret
 
 
 
 def handle_news():
-    API_KEY: str = API_KEY
+    API_KEY: str = secret.API_KEY
     URL: str = "https://newsdata.io/api/1/latest"
 
     params: Dict[str, str] = {
@@ -62,9 +62,23 @@ def processCommand(c):
 def websearch(query:str):
     url:str=f"https://www.google.com/search?q={query}"
     webbrowser.open_new(url)
-
-def listenMicrophone(phrase_time_limit:int)->str:
-    command:str=""
+def getCommand(source,phrase_time_limit:float)->str:
+    try:
+        audio=r.listen(source,timeout=2,phrase_time_limit=phrase_time_limit)
+    except sr.WaitTimeoutError:
+        print("No speech detected")
+        return""
+    try:
+        command:str=r.recognize_google(audio)
+        return command.lower()
+    except sr.WaitTimeoutError:
+        print("No speech detected")
+        return""
+    except Exception:
+        print("could not request result.")
+        return""
+    
+def listenMicrophone()->str:
     with sr.Microphone() as source:
         # r.adjust_for_ambient_noise(source,duration=2)
         r.energy_threshold=100
@@ -73,33 +87,21 @@ def listenMicrophone(phrase_time_limit:int)->str:
         r.phrase_threshold=0.3
         print("listening")
         command:str=""
-        try:
-            audio=r.listen(source,timeout=2,phrase_time_limit=phrase_time_limit)
-        except sr.WaitTimeoutError:
-            print("No speech detected")
-            return""
-    try:
-        command=r.recognize_google(audio)
-    except sr.UnknownValueError as e:
-        print("Could not understand audio")
-    except sr.RequestError as e:
-        print("Could not request result.")
-    return command.lower()
+        command=getCommand(source=source,phrase_time_limit=1)
+        print(f"COMMAND IS {command}")
+        if(KEYWORD in command):
+            print("READY TO COMMAND.")
+            speak("YA")
+            command=getCommand(source=source,phrase_time_limit=5)
+            processCommand(command)
+            print(f"Your command is {command}")
 
 
 def main():
     print("recognizing")
     speak("JARVIS ACTIVATED")
     while True:
-        command:str=listenMicrophone(phrase_time_limit=1.5)
-        if(KEYWORD in command):
-            speak("YA")
-            print("READY TO COMMAND")
-            command:str=listenMicrophone(5)
-            if command !="":
-                # websearch(command)
-                processCommand(command)
-                print(f"Your command is{command}")
+        listenMicrophone()
             
 
 if __name__== "__main__":
