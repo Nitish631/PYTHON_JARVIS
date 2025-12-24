@@ -1,15 +1,19 @@
 import speech_recognition as sr
 import pyttsx3
 import webbrowser
-# from datetime import datetime ,timedelta
 from typing import Dict ,Any
 import requests
 import secret
+import client
 
 
+def playMedia(content:str):
+    content.replace(" ","+")
+    url=f"https://www.youtube.com/results?search_query={content}"
+    webbrowser.open_new(url)
 
 def handle_news():
-    API_KEY: str = secret.API_KEY
+    API_KEY: str = secret.NEWS_API_KEY
     URL: str = "https://newsdata.io/api/1/latest"
 
     params: Dict[str, str] = {
@@ -45,7 +49,7 @@ def open_web_domain(domain:str):
     url=f"https://www.{domain}.com"
     webbrowser.open_new(url)
 
-def processCommand(c):
+def processCommand(c:str):
     if "open google" in c:
         open_web_domain("google")
     elif "open facebook" in c:
@@ -56,8 +60,13 @@ def processCommand(c):
         open_web_domain("youtube")
     elif "news" in c:
         handle_news()
+    elif "play" in c:
+        prompt=f"find the single url of youtube video for the prompt \"{c}\""
+        url=client.getAiOutput(prompt)
+        print(url)
+        # playMedia(c)
     else:
-        websearch(c)
+        client.streamAi(c)
 
 def websearch(query:str):
     url:str=f"https://www.google.com/search?q={query}"
@@ -100,10 +109,11 @@ def listenMicrophone()->str:
 
 
 def main():
-    # print("recognizing")
-    # listenMicrophone()
-    handle_news()
+
+    print("recognizing")
+    listenMicrophone()
             
 
 if __name__== "__main__":
-    main()
+    # main()
+    processCommand("play chillgum")
