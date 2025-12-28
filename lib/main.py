@@ -40,6 +40,9 @@ KEYWORD="jarvis"
 
 def speak(text:str):
     tts=pyttsx3.init()
+    voices=tts.getProperty('voices')
+    tts.setProperty('voice',voices[1].id)
+    tts.setProperty('rate',170)
     tts.say(text)
     tts.runAndWait()
     tts.stop()
@@ -64,11 +67,10 @@ def processCommand(c:str):
         prompt=f"find the single url of youtube video for the prompt \"{c}\""
         url=client.getAiOutput(prompt)
         print(url)
-        # playMedia(c)
     else:
         client.streamAi(c)
 
-def websearch(query:str):
+def googleSearch(query:str):
     url:str=f"https://www.google.com/search?q={query}"
     webbrowser.open_new(url)
 def getCommand(source,phrase_time_limit:float)->str:
@@ -90,7 +92,7 @@ def getCommand(source,phrase_time_limit:float)->str:
 def listenMicrophone()->str:
     with sr.Microphone() as source:
         r.adjust_for_ambient_noise(source,duration=3)
-        r.energy_threshold=100
+        r.energy_threshold=150
         r.non_speaking_duration=0.5
         r.pause_threshold=1
         r.phrase_threshold=0.3
@@ -99,9 +101,10 @@ def listenMicrophone()->str:
         while True:
             print("listening")
             command=getCommand(source=source,phrase_time_limit=2)
+            print(f"COMMAND IS {command}")
             if(KEYWORD in command):
                 print("READY TO COMMAND.")
-                speak("YA")
+                speak("YES BOSS")
                 command=getCommand(source=source,phrase_time_limit=5)
                 if(command!=""):
                     processCommand(command)
@@ -115,5 +118,4 @@ def main():
             
 
 if __name__== "__main__":
-    # main()
-    processCommand("play chillgum")
+    main()

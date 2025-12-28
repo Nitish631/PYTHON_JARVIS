@@ -4,13 +4,13 @@ import secret
 Open_AI_API_KEY=secret.OPEN_AI_API_KEY
 client = OpenAI(api_key=Open_AI_API_KEY)
 def streamAi(prompt:str):
-    prompt=f"{prompt},give output in small chunks like sentence by sentence,dont give options just proceed with the best one"
+    prompt=f"{prompt},give output in small chunks like sentence by sentence"
     buffer=""
     with client.responses.stream(
-        model="gpt-5-nano",
+        model="gpt-5-mini",
         input=prompt
     ) as stream:
-        for event in stream:
+        for event  in stream:
             if event.type=="response.output_text.delta":
                 chunk=event.delta
                 buffer+=chunk
@@ -19,7 +19,7 @@ def streamAi(prompt:str):
                     print(line)
                     main.speak(line)
                     buffer=""
-    final_response=stream.get_final_response()
+    # final_response=stream.get_final_response()
 def getAiOutput(prompt:str):
     response= client.responses.create(
         model="gpt-5-nano",
